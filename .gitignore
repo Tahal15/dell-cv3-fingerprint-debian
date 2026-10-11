@@ -1,0 +1,8 @@
+*.so
+*.o
+*.orig
+*~
+build/
+tests/test_shim
+tests/libfakeusb.so
+tools/sync_probe
