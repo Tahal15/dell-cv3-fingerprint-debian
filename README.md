@@ -54,7 +54,7 @@ The included [`install.sh`](install.sh) automates the entire solution in a singl
 Open a terminal and run:
 
 ```bash
-git clone https://github.com/<your-username>/dell-cv3-fingerprint-debian.git
+git clone https://github.com/tahal15/dell-cv3-fingerprint-debian.git
 cd dell-cv3-fingerprint-debian
 sudo ./install.sh
 ```
