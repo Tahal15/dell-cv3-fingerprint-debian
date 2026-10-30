@@ -41,7 +41,7 @@ The included [`install.sh`](install.sh) automates the entire solution in a singl
 2. **Downloads and installs the official Canonical/Dell Broadcom driver and firmware** (`bcmCitadel`).
 3. **Compiles a Debian-compatible Host-Event Shim** ([`src/bcm_cv_host_event_shim.c`](src/bcm_cv_host_event_shim.c)) that intercepts and answers the `CV_GET_HOST_TIMESTAMP_INTERRUPT`, preventing `enroll-disconnected` and `-99` errors.
 4. **Disables USB Autosuspend** specifically for `0a5c:5843` so the reader remains powered during scans.
-5. **Configures `fprintd` systemd service** with `--no-timeout` and `LD_PRELOAD` for the shim.
+5. **Configures and enables `fprintd` systemd service** with `--no-timeout`, `LD_PRELOAD` for the shim, and autostart on boot (`multi-user.target`).
 6. **Protects your build** with `apt-mark hold libfprint-2-2` so regular `apt upgrade` won't overwrite it.
 7. **Enables PAM** (`pam-auth-update`) so fingerprints work for `sudo`, screen locking, and login.
 

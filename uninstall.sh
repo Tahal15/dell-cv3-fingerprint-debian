@@ -31,6 +31,7 @@ apt-get install --reinstall -y libfprint-2-2
 
 # 3. Clean up custom files
 echo "Cleaning up custom libraries, shims, udev rules and overrides..."
+systemctl disable fprintd 2>/dev/null || true
 rm -f /usr/lib/x86_64-linux-gnu/libfprint-2-tod.so* \
       /usr/lib/x86_64-linux-gnu/libfprint-2/tod-1/libfprint-2-tod-1-broadcom.so \
       /usr/lib/udev/rules.d/60-libfprint-2-device-broadcom.rules \

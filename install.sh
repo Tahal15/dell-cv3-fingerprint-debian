@@ -149,6 +149,9 @@ cat << 'EOF' > /etc/systemd/system/fprintd.service.d/override.conf
 ExecStart=
 ExecStart=/usr/libexec/fprintd --no-timeout
 Environment=LD_PRELOAD=/usr/local/lib/libbcm-cv-host-event-shim.so
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
 # Grant user journal-reading permissions
@@ -170,6 +173,7 @@ for dev in /sys/bus/usb/devices/*; do
 done
 
 systemctl daemon-reload
+systemctl enable fprintd
 echo "Restarting fprintd (initializing firmware, waiting 15s)..."
 systemctl restart fprintd
 sleep 15
