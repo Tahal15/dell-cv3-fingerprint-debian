@@ -16,5 +16,6 @@ uint8_t fake_usb_request_type(void);
 uint8_t fake_usb_request(void);
 uint16_t fake_usb_value(void);
 uint16_t fake_usb_index(void);
+void fake_cv_set_identify_status(int status, unsigned int result);
 
 #endif

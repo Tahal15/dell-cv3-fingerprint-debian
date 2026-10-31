@@ -30,6 +30,7 @@ enum {
   BCM_CV_VENDOR_DEVICE_OUT = 0x40,
   BCM_CV_MAX_HOST_EVENTS = 8,
   BCM_CV_CONTROL_TIMEOUT_MS = 3000,
+  BCM_CV_STATUS_NO_MATCH = 137,
 };
 
 static pthread_once_t resolve_once = PTHREAD_ONCE_INIT;
@@ -208,5 +209,26 @@ cvif_fingerprint_identify(void *template_handles, unsigned int template_count,
       match_result != NULL ? *match_result : 0U);
   if (message_length > 0)
     (void) write(STDERR_FILENO, message, (size_t) message_length);
+
+  /*
+   * Fix for Broadcom TOD driver bug:
+   * When the ControlVault chip finds no match (or bad swipe/scan), cvif_fingerprint_identify
+   * returns status 137 (0x89 = CV_STATUS_NO_MATCH) with match_result = 0.
+   * However, the Broadcom driver's verify/identify state handlers only check if status == 0.
+   * If status != 0, the driver logs "Verify failed!" and jumps straight to
+   * fpi_device_verify_complete(dev, NULL) WITHOUT calling fpi_device_verify_report(dev, FP_VERIFY_NO_MATCH).
+   * Libfprint flags this as a protocol violation ("Driver reported successful verify complete
+   * but did not report the result earlier. Reporting error instead"), causing PAM / kscreenlocker
+   * to fail with an unspecified error and abort the biometric session.
+   * By translating status 137 to status 0 (with match_result = 0), the driver properly invokes
+   * fpi_device_verify_report(dev, FP_VERIFY_NO_MATCH) followed by complete, reporting a clean NO_MATCH
+   * to libfprint and allowing retry.
+   */
+  if (status == BCM_CV_STATUS_NO_MATCH) {
+    if (match_result != NULL)
+      *match_result = 0;
+    status = 0;
+  }
+
   return status;
 }

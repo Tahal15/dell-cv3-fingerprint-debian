@@ -63,12 +63,37 @@ test_other_event_is_untouched(void)
   assert(fake_usb_control_calls() == 0);
 }
 
+static void
+test_identify_translates_no_match(void)
+{
+  unsigned int match_result = 99;
+  fake_cv_set_identify_status(137, 0);
+
+  int status = cvif_fingerprint_identify(NULL, 1, &match_result);
+  assert(status == 0);
+  assert(match_result == 0);
+}
+
+static void
+test_identify_passes_match(void)
+{
+  unsigned int match_result = 0;
+  fake_cv_set_identify_status(0, 1);
+
+  int status = cvif_fingerprint_identify(NULL, 1, &match_result);
+  assert(status == 0);
+  assert(match_result == 1);
+}
+
 int
 main(void)
 {
   test_timestamp_packing();
   test_timestamp_event_is_consumed();
   test_other_event_is_untouched();
+  test_identify_translates_no_match();
+  test_identify_passes_match();
   puts("PASS: timestamp host event is synchronized and hidden from vendor blob");
+  puts("PASS: identify status 137 (no match) is normalized to status 0");
   return 0;
 }

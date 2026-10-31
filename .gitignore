@@ -6,3 +6,6 @@ build/
 tests/test_shim
 tests/libfakeusb.so
 tools/sync_probe
+**/test_shim
+**/libfakeusb.so
+**/sync_probe

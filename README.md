@@ -39,7 +39,7 @@ The included [`install.sh`](install.sh) automates the entire solution in a singl
 
 1. **Builds `libfprint` with TOD support** matching the exact version installed on your Debian system (e.g. `1.94.9+tod1`).
 2. **Downloads and installs the official Canonical/Dell Broadcom driver and firmware** (`bcmCitadel`).
-3. **Compiles a Debian-compatible Host-Event Shim** ([`src/bcm_cv_host_event_shim.c`](src/bcm_cv_host_event_shim.c)) that intercepts and answers the `CV_GET_HOST_TIMESTAMP_INTERRUPT`, preventing `enroll-disconnected` and `-99` errors.
+3. **Compiles a Debian-compatible Host-Event Shim** ([`src/bcm_cv_host_event_shim.c`](src/bcm_cv_host_event_shim.c)) that intercepts and answers `CV_GET_HOST_TIMESTAMP_INTERRUPT` (preventing `enroll-disconnected` and `-99` errors) and normalizes `CV_STATUS_NO_MATCH` (`status 137 / 0x89`) so driver mismatches gracefully prompt for retry instead of crashing with an unspecified error.
 4. **Disables USB Autosuspend** specifically for `0a5c:5843` so the reader remains powered during scans.
 5. **Configures and enables `fprintd` systemd service** with `--no-timeout`, `LD_PRELOAD` for the shim, and autostart on boot (`multi-user.target`).
 6. **Protects your build** with `apt-mark hold libfprint-2-2` so regular `apt upgrade` won't overwrite it.
@@ -110,10 +110,10 @@ The terminal will prompt you to place your finger on the sensor instead of askin
 ### `Device reported an error during enroll: Device disabled to prevent overheating`
 The sensor has built-in thermal protection. If you repeatedly tap or swipe too fast, it temporarily disables itself. Let the laptop sit idle for 1–2 minutes, then scan with calm, 1-second pauses between touches.
 
-### `Verify result: verify-unknown-error (done)`
-* In the system journal, this corresponds to `identify returned status=137 (0x89), result=0`, which means **no match** (the finger was placed at an angle different from enrollment or pressed too lightly).
-* Ensure you perform a **Cold Reboot** after the initial firmware update.
-* If needed, delete the old template and re-enroll covering the center and edges:
+### `Verify result: verify-no-match (done)` / Finger Mismatch
+* In the system journal, `identify returned status=137 (0x89), result=0` corresponds to **no match** (the finger was placed at an angle different from enrollment or pressed too lightly).
+* The shim properly reports `FP_VERIFY_NO_MATCH` so the system allows you to retry touching the sensor instead of aborting the session.
+* If a finger is frequently not recognized, delete the old template and re-enroll covering the center and edges:
   ```bash
   fprintd-delete "$USER"
   fprintd-enroll -f right-index-finger

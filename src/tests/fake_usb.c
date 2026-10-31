@@ -67,3 +67,24 @@ uint8_t fake_usb_request_type(void) { return request_type; }
 uint8_t fake_usb_request(void) { return request; }
 uint16_t fake_usb_value(void) { return value; }
 uint16_t fake_usb_index(void) { return index_value; }
+
+static int fake_identify_status;
+static unsigned int fake_identify_result;
+
+void
+fake_cv_set_identify_status(int status, unsigned int result)
+{
+  fake_identify_status = status;
+  fake_identify_result = result;
+}
+
+int
+cvif_fingerprint_identify(void *template_handles, unsigned int template_count,
+                          unsigned int *match_result)
+{
+  (void) template_handles;
+  (void) template_count;
+  if (match_result != NULL)
+    *match_result = fake_identify_result;
+  return fake_identify_status;
+}
